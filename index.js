@@ -49,7 +49,7 @@ const server = http.createServer((req, res) => {
             const body = Buffer.concat(chunks).toString();
             var size = Buffer.byteLength(body, 'utf8');
             if(size > MaximumSizePerFileInBytes) {
-                res.writeHead(400, {'Content-Type':'text/plain'});
+                res.writeHead(400, {'Content-Type':'text/plain','Access-Control-Allow-Origin': '*'});
                 res.end(`file is too large.\n`)
                 fs.appendFile(blacklist, `${ip}\t${TimeStamp}\t${size}\n`)
                 console.log(`blocked ${ip} trying to upload ${size} bytes of data`);
@@ -59,18 +59,18 @@ const server = http.createServer((req, res) => {
             var currentsizestr = fs.readFileSync(usedStorageLog, 'utf8');
             var currentsize = parseInt(currentsizestr) || 0;
             if(currentsize + size >= AllocatedStorageSizeInBytes){
-                res.writeHead(507, {'Content-Type': 'text/plain'});
+                res.writeHead(507, {'Content-Type': 'text/plain','Access-Control-Allow-Origin': '*'});
                 res.end('Save failed - storage limit\n'); 
                 block = true;
                 return;
             }
             fs.appendFile(saveFile, `${ip} - ${body}\n`, (e) => {
                 if (e) { console.error(`save failed: ${e}`);
-                    res.writeHead(500, {'Content-Type':'text/plain'});
+                    res.writeHead(500, {'Content-Type':'text/plain','Access-Control-Allow-Origin': '*'});
                     res.end('Save failed\n');  // ← the reply that was missing
                     return;
                 } else if (!e && !block) {
-                    res.writeHead(200, {'Content-Type':'text/plain'});
+                    res.writeHead(200, {'Content-Type':'text/plain','Access-Control-Allow-Origin': '*'});
                     res.end('Successfully uploaded.\n'); 
                     var currentsizestr = fs.readFileSync(usedStorageLog, 'utf8');
                     var currentsize = parseInt(currentsizestr) || 0;
@@ -83,11 +83,11 @@ const server = http.createServer((req, res) => {
             });
         });
     } else if (block) {
-        res.writeHead(403, {'Content-Type':'text/plain'});
+        res.writeHead(403, {'Content-Type':'text/plain','Access-Control-Allow-Origin': '*'});
         res.end(`Forbidden\n`);
         return;
     } else {
-        res.writeHead(405, { 'Content-Type': 'text/plain' });
+        res.writeHead(405, { 'Content-Type': 'text/plain','Access-Control-Allow-Origin': '*'});
         console.log(`${ip} used ${req.method} to request the server - returned 405`);
         res.end('Expected POST; Method not allowed\n');
         return;
